@@ -249,102 +249,154 @@ const imagesList = [
 
 // Replace your code here
 class App extends Component {
-  state = {getRequiredTabList: []}
+  constructor(props) {
+    super(props)
+    this.state = {score: 0, timer: 60, randomImage: 0, thumbnailsList: []}
+  }
+
+  componentDidMount = () => {
+    this.setTimer()
+    this.IncreaseScore()
+    this.getFruitsList()
+  }
+
+  componentWillUnmount() {
+    this.startTheGameAgain()
+  }
+
+  startTheGameAgain = () => {
+    this.setTimer()
+    this.IncreaseScore()
+    this.getFruitsList()
+    this.setState({score: 0})
+    this.setState({timer: 60})
+  }
+
+  getRequiredThumbnailsList = key => {
+    const thumbnailsListes = imagesList.filter(
+      eachImage => eachImage.category === key,
+    )
+    this.setState({thumbnailsList: thumbnailsListes})
+  }
 
   getFruitsList = () => {
     const fruitsList = imagesList.filter(
-      eachImage => eachImage.category === tabsList[0].tabId,
+      each => each.category === tabsList[0].tabId,
     )
-    this.setState({getRequiredTabList: fruitsList})
+    this.setState({thumbnailsList: fruitsList})
   }
 
-  byDefaultList = () => {
-    const fruitsList = imagesList.filter(
-      eachImage => eachImage.category === tabsList[0].tabId,
-    )
-    this.setState({getRequiredTabList: fruitsList})
+  setTimer = () => {
+    this.timerID = setInterval(() => {
+      this.setState(prev => {
+        const newSeconds = prev.timer - 1
+        if (newSeconds === 0) {
+          clearInterval(this.timerID)
+        }
+        return {timer: newSeconds}
+      })
+    }, 1000)
   }
 
-  getAnimalsList = () => {
-    const animalsList = imagesList.filter(
-      eachImage => eachImage.category === tabsList[1].tabId,
-    )
-    this.setState({getRequiredTabList: animalsList})
-  }
-
-  getPlacesList = () => {
-    const placesList = imagesList.filter(
-      eachImage => eachImage.category === tabsList[2].tabId,
-    )
-    this.setState({getRequiredTabList: placesList})
+  IncreaseScore = key => {
+    const {randomImage} = this.state
+    if (key === imagesList[randomImage].id) {
+      this.setState(prev => ({score: prev.score + 1}))
+    }
+    const randomPicture = Math.floor(Math.random() * imagesList.length)
+    this.setState({randomImage: randomPicture})
   }
 
   render() {
-    const randomPicture = Math.floor(Math.random() * imagesList.length)
-    const {getRequiredTabList} = this.state
-
+    const {score, timer, randomImage, thumbnailsList} = this.state
     return (
       <>
-        <div className="task-bar-container">
+        <div className="task-bar">
           <img
             src="https://assets.ccbp.in/frontend/react-js/match-game-website-logo.png"
-            className="image-logo"
-            alt="website-logo"
+            alt="website logo"
+            className="website-logo"
           />
           <div className="score-timer-container">
-            <p className="score-styling">
-              Score:<span className="score-count">0</span>
+            <p className="score">
+              Score: <span className="span-score">{score}</span>
             </p>
-            <img
-              src="https://assets.ccbp.in/frontend/react-js/match-game-timer-img.png"
-              className="game-timer-image"
-              alt="timer"
-            />
-            <p className="timer-running">60 secs</p>
+            <div className="timer-container">
+              <img
+                src="https://assets.ccbp.in/frontend/react-js/match-game-timer-img.png"
+                className="timer-image"
+                alt="timer"
+              />
+              <p className="span-score">{timer} secs</p>
+            </div>
           </div>
         </div>
+
         <div className="bg-container">
-          <img
-            src={imagesList[randomPicture].imageUrl}
-            alt={imagesList[randomPicture].category.toLowerCase()}
-            className="random-image-styling"
-          />
-
-          <div className="tab-buttons-container">
-            <button
-              className="tab-button"
-              type="button"
-              onClick={this.getFruitsList}
-            >
-              {tabsList[0].displayText}
-            </button>
-            <button
-              className="tab-button"
-              type="button"
-              onClick={this.getAnimalsList}
-            >
-              {tabsList[1].displayText}
-            </button>
-            <button
-              className="tab-button"
-              type="button"
-              onClick={this.getPlacesList}
-            >
-              {tabsList[2].displayText}
-            </button>
-          </div>
-
-          <div className="tabs-be-displayed-container">
-            {getRequiredTabList.map(eachImage => (
-              <li key={eachImage.id} className="list-styling">
+          {timer === 0 ? (
+            <div className="game-over-contaier">
+              <img
+                src="https://assets.ccbp.in/frontend/react-js/match-game-trophy.png"
+                alt="trophy"
+                className="trophy"
+              />
+              <p className="score-styling">YOUR SCORE</p>
+              <h1 className="score-styling">{score}</h1>
+              <button
+                type="button"
+                className="paly-again-button"
+                onClick={this.startTheGameAgain}
+              >
                 <img
-                  src={eachImage.thumbnailUrl}
-                  alt={eachImage.category.toLowerCase()}
-                  className="thumb-nail-image-styling"
+                  src="https://assets.ccbp.in/frontend/react-js/match-game-play-again-img.png"
+                  alt="reset"
+                  className="reset-image"
                 />
-              </li>
-            ))}
-          </div>
+                PLAY AGAIN
+              </button>
+            </div>
+          ) : (
+            <>
+              {' '}
+              <img
+                src={imagesList[randomImage].imageUrl}
+                alt="match"
+                className="random-image"
+              />
+              <ul className="tabs-container">
+                {tabsList.map(eachTab => (
+                  <li className="list-button" key={eachTab.tabId}>
+                    <button
+                      type="button"
+                      className="tab-button"
+                      onClick={() =>
+                        this.getRequiredThumbnailsList(eachTab.tabId)
+                      }
+                    >
+                      {eachTab.displayText}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <ul className="thumbnails-container">
+                {thumbnailsList.map(eachImage => (
+                  <li className="list-button" key={eachImage.id}>
+                    <button
+                      type="button"
+                      className="tab-button"
+                      onClick={() => this.IncreaseScore(eachImage.id)}
+                    >
+                      <img
+                        src={eachImage.imageUrl}
+                        alt="thumbnail"
+                        className="thumnail-image"
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </>
     )
