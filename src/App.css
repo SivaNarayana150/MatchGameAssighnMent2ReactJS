@@ -85,6 +85,16 @@ body {
   color: #ffffff;
   font-size: medium;
 }
+.active-button {
+  border-style: solid;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  background-color: transparent;
+  color: #fec653;
+  font-size: medium;
+  border-color: #fec653;
+}
 .thumnail-image {
   height: 16vh;
   width: 18vh;

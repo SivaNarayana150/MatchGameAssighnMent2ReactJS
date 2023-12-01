@@ -257,6 +257,7 @@ class App extends Component {
       randomImage: 0,
       thumbnailsList: [],
       showGameOver: false,
+      activeTab: tabsList[0].tabId,
     }
   }
 
@@ -278,6 +279,7 @@ class App extends Component {
   }
 
   getRequiredThumbnailsList = key => {
+    this.setState({activeTab: key})
     const thumbnailsListes = imagesList.filter(
       eachImage => eachImage.category === key,
     )
@@ -322,7 +324,15 @@ class App extends Component {
   }
 
   render() {
-    const {score, timer, randomImage, thumbnailsList, showGameOver} = this.state
+    const {
+      score,
+      timer,
+      randomImage,
+      thumbnailsList,
+      showGameOver,
+      activeTab,
+    } = this.state
+
     return (
       <>
         <div className="task-bar">
@@ -382,7 +392,11 @@ class App extends Component {
                   <li className="list-button" key={eachTab.tabId}>
                     <button
                       type="button"
-                      className="tab-button"
+                      className={
+                        activeTab === eachTab.tabId
+                          ? 'active-button'
+                          : 'tab-button'
+                      }
                       onClick={() =>
                         this.getRequiredThumbnailsList(eachTab.tabId)
                       }
