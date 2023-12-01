@@ -251,12 +251,18 @@ const imagesList = [
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {score: 0, timer: 60, randomImage: 0, thumbnailsList: []}
+    this.state = {
+      score: 0,
+      timer: 60,
+      randomImage: 0,
+      thumbnailsList: [],
+      showGameOver: false,
+    }
   }
 
   componentDidMount = () => {
     this.setTimer()
-    this.IncreaseScore()
+
     this.getFruitsList()
   }
 
@@ -268,47 +274,55 @@ class App extends Component {
     this.setTimer()
     this.IncreaseScore()
     this.getFruitsList()
-    this.setState({score: 0})
-    this.setState({timer: 60})
+    this.setState({score: 0, timer: 60, showGameOver: false})
   }
 
   getRequiredThumbnailsList = key => {
     const thumbnailsListes = imagesList.filter(
       eachImage => eachImage.category === key,
     )
-    this.setState({thumbnailsList: thumbnailsListes})
+    this.setState({thumbnailsList: thumbnailsListes, showGameOver: false})
   }
 
   getFruitsList = () => {
     const fruitsList = imagesList.filter(
       each => each.category === tabsList[0].tabId,
     )
-    this.setState({thumbnailsList: fruitsList})
+    this.setState({thumbnailsList: fruitsList, showGameOver: false})
   }
 
   setTimer = () => {
     this.timerID = setInterval(() => {
-      this.setState(prev => {
-        const newSeconds = prev.timer - 1
+      this.setState(prevState => {
+        const {timer} = prevState
+        const newSeconds = timer > 0 ? timer - 1 : 0
+
         if (newSeconds === 0) {
           clearInterval(this.timerID)
+          this.setState({showGameOver: true})
         }
+
         return {timer: newSeconds}
       })
     }, 1000)
   }
 
   IncreaseScore = key => {
-    const {randomImage} = this.state
-    if (key === imagesList[randomImage].id) {
-      this.setState(prev => ({score: prev.score + 1}))
+    const {randomImage, showGameOver} = this.state
+    if (!showGameOver) {
+      if (key === imagesList[randomImage].id) {
+        this.setState(prev => ({score: prev.score + 1}))
+      } else {
+        this.setState({showGameOver: true})
+        clearInterval(this.timerID)
+      }
+      const randomPicture = Math.floor(Math.random() * imagesList.length)
+      this.setState({randomImage: randomPicture})
     }
-    const randomPicture = Math.floor(Math.random() * imagesList.length)
-    this.setState({randomImage: randomPicture})
   }
 
   render() {
-    const {score, timer, randomImage, thumbnailsList} = this.state
+    const {score, timer, randomImage, thumbnailsList, showGameOver} = this.state
     return (
       <>
         <div className="task-bar">
@@ -333,7 +347,7 @@ class App extends Component {
         </div>
 
         <div className="bg-container">
-          {timer === 0 ? (
+          {showGameOver || timer === 0 ? (
             <div className="game-over-contaier">
               <img
                 src="https://assets.ccbp.in/frontend/react-js/match-game-trophy.png"
